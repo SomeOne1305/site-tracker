@@ -3,13 +3,20 @@
 	"builds": [
 		{
 			"src": "main.go",
-			"use": "@vercel/go"
+			"use": "@vercel/go",
+			"config": {
+				"go": "1.26.1"
+			}
 		}
 	],
 	"rewrites": [
 		{
 			"source": "/(.*)",
-			"destination": "main.go"
+			"destination": "/api"
 		}
-	]
+	],
+	"env": {
+		"GO_BUILD_FLAGS": "-ldflags '-s -w'",
+		"PORT": "3000"
+	}
 }
