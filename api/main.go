@@ -79,6 +79,9 @@ func init() {
 	app.Get("/swagger/doc.json", func(c fiber.Ctx) error {
 		return c.SendFile("./docs/swagger.json")
 	})
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.SendString("Visit Tracker API is running")
+	})
 	app.Use(cors.New(cors.Config{
 		AllowMethods: []string{
 			"GET",
