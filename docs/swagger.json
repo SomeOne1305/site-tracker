@@ -1,0 +1,551 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"title": "Visit Tracker API",
+		"description": "API for tracking website visits and analytics",
+		"version": "1.0.0",
+		"contact": {
+			"name": "Visit Tracker Support"
+		}
+	},
+	"host": "127.0.0.1:8080",
+	"basePath": "/api/v1",
+	"schemes": ["http", "https"],
+	"consumes": ["application/json"],
+	"produces": ["application/json"],
+	"paths": {
+		"/auth/register": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "Register a new user",
+				"description": "Create a new user account with email and password",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/RegisterRequest"
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "User registered successfully",
+						"schema": {
+							"$ref": "#/definitions/UserResponse"
+						}
+					},
+					"400": {
+						"description": "Invalid input"
+					},
+					"409": {
+						"description": "User already exists"
+					}
+				}
+			}
+		},
+		"/auth/verify": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "Verify email address",
+				"description": "Verify user email with OTP code",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/VerifyEmailRequest"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Email verified successfully"
+					},
+					"400": {
+						"description": "Invalid or expired OTP"
+					}
+				}
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "User login",
+				"description": "Authenticate user with email and password",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/LoginRequest"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Login successful",
+						"schema": {
+							"$ref": "#/definitions/LoginResponse"
+						}
+					},
+					"401": {
+						"description": "Invalid credentials"
+					}
+				}
+			}
+		},
+		"/user/me": {
+			"get": {
+				"tags": ["User"],
+				"summary": "Get current user profile",
+				"description": "Retrieve the current authenticated user's profile information",
+				"responses": {
+					"200": {
+						"description": "User profile retrieved",
+						"schema": {
+							"$ref": "#/definitions/UserResponse"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/user/update-me": {
+			"put": {
+				"tags": ["User"],
+				"summary": "Update user profile",
+				"description": "Update the current authenticated user's profile information",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/UpdateUserRequest"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "User updated successfully",
+						"schema": {
+							"$ref": "#/definitions/UserResponse"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/project/create": {
+			"post": {
+				"tags": ["Project"],
+				"summary": "Create a new project",
+				"description": "Create a new tracking project",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/CreateProjectRequest"
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Project created successfully",
+						"schema": {
+							"$ref": "#/definitions/ProjectResponse"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/project/all": {
+			"get": {
+				"tags": ["Project"],
+				"summary": "Get all projects",
+				"description": "Retrieve all projects for the authenticated user",
+				"responses": {
+					"200": {
+						"description": "Projects retrieved successfully",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/ProjectResponse"
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/projects/{projectID}/dashboard": {
+			"get": {
+				"tags": ["Tracking"],
+				"summary": "Get project dashboard",
+				"description": "Retrieve dashboard data for a specific project",
+				"security": [
+					{
+						"api_key": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectID",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Dashboard data retrieved"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"404": {
+						"description": "Project not found"
+					}
+				}
+			}
+		},
+		"/projects/{projectID}/chart/daily": {
+			"get": {
+				"tags": ["Tracking"],
+				"summary": "Get daily chart data",
+				"description": "Retrieve daily visit chart data for a project",
+				"security": [
+					{
+						"api_key": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectID",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Daily chart data retrieved"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/projects/{projectID}/chart/monthly": {
+			"get": {
+				"tags": ["Tracking"],
+				"summary": "Get monthly chart data",
+				"description": "Retrieve monthly visit chart data for a project",
+				"security": [
+					{
+						"api_key": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectID",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Monthly chart data retrieved"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/projects/{projectID}/endpoints": {
+			"get": {
+				"tags": ["Tracking"],
+				"summary": "Get API endpoints",
+				"description": "Retrieve all API endpoints for a project",
+				"parameters": [
+					{
+						"name": "projectID",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Endpoints retrieved"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/track": {
+			"post": {
+				"tags": ["Tracking"],
+				"summary": "Track page view",
+				"description": "Track a page view with rate limiting (200 requests per minute per IP)",
+				"parameters": [
+					{
+						"name": "project_id",
+						"in": "query",
+						"required": true,
+						"type": "string",
+						"description": "Project ID to track"
+					},
+					{
+						"name": "body",
+						"in": "body",
+						"schema": {
+							"$ref": "#/definitions/TrackingRequest"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Page view tracked successfully"
+					},
+					"429": {
+						"description": "Rate limited - too many requests"
+					}
+				}
+			}
+		},
+		"/embed/{projectID}": {
+			"get": {
+				"tags": ["Tracking"],
+				"summary": "Get embed script",
+				"description": "Get the tracking embed script for a project",
+				"parameters": [
+					{
+						"name": "projectID",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"produces": ["text/html"],
+				"responses": {
+					"200": {
+						"description": "Embed script returned"
+					}
+				}
+			}
+		},
+		"/t/{projectID}.js": {
+			"get": {
+				"tags": ["Tracking"],
+				"summary": "Get tracking script file",
+				"description": "Get the JavaScript tracking script file",
+				"parameters": [
+					{
+						"name": "projectID",
+						"in": "path",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"produces": ["application/javascript"],
+				"responses": {
+					"200": {
+						"description": "JavaScript tracking script returned"
+					}
+				}
+			}
+		},
+		"/admin/aggregate": {
+			"post": {
+				"tags": ["Admin"],
+				"summary": "Trigger aggregation",
+				"description": "Trigger data aggregation (requires API key or Bearer token)",
+				"security": [
+					{
+						"api_key": []
+					},
+					{
+						"bearer": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Aggregation triggered"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		}
+	},
+	"definitions": {
+		"RegisterRequest": {
+			"type": "object",
+			"required": ["email", "password", "name"],
+			"properties": {
+				"email": {
+					"type": "string",
+					"format": "email"
+				},
+				"password": {
+					"type": "string",
+					"minLength": 6
+				},
+				"name": {
+					"type": "string"
+				}
+			}
+		},
+		"LoginRequest": {
+			"type": "object",
+			"required": ["email", "password"],
+			"properties": {
+				"email": {
+					"type": "string",
+					"format": "email"
+				},
+				"password": {
+					"type": "string"
+				}
+			}
+		},
+		"VerifyEmailRequest": {
+			"type": "object",
+			"required": ["email", "code"],
+			"properties": {
+				"email": {
+					"type": "string",
+					"format": "email"
+				},
+				"code": {
+					"type": "string",
+					"description": "OTP code sent to email"
+				}
+			}
+		},
+		"UpdateUserRequest": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"email": {
+					"type": "string",
+					"format": "email"
+				}
+			}
+		},
+		"CreateProjectRequest": {
+			"type": "object",
+			"required": ["name"],
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"url": {
+					"type": "string",
+					"format": "uri"
+				}
+			}
+		},
+		"TrackingRequest": {
+			"type": "object",
+			"properties": {
+				"url": {
+					"type": "string"
+				},
+				"referrer": {
+					"type": "string"
+				},
+				"user_agent": {
+					"type": "string"
+				}
+			}
+		},
+		"UserResponse": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"email": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"created_at": {
+					"type": "string",
+					"format": "date-time"
+				}
+			}
+		},
+		"LoginResponse": {
+			"type": "object",
+			"properties": {
+				"token": {
+					"type": "string"
+				},
+				"user": {
+					"$ref": "#/definitions/UserResponse"
+				}
+			}
+		},
+		"ProjectResponse": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"url": {
+					"type": "string"
+				},
+				"user_id": {
+					"type": "string"
+				},
+				"created_at": {
+					"type": "string",
+					"format": "date-time"
+				}
+			}
+		}
+	},
+	"securityDefinitions": {
+		"api_key": {
+			"type": "apiKey",
+			"name": "X-API-Key",
+			"in": "header"
+		}
+	}
+}

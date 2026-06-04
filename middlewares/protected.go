@@ -17,6 +17,9 @@ import (
 func AuthRequired(pool *pgxpool.Pool) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// Try cookie first, then Authorization header
+		if c.Get("X-API-Key") != "" {
+			return APIAuthRequired(pool)(c)
+		}
 		token := c.Cookies("access_token")
 		refresh_token := c.Cookies("refresh_token")
 		if refresh_token != "" && token == "" {
@@ -68,6 +71,26 @@ func AuthRequired(pool *pgxpool.Pool) fiber.Handler {
 		c.Locals("userID", mapClaims["id"])
 		c.Locals("sessionID", mapClaims["session_id"])
 
+		return c.Next()
+	}
+}
+
+func APIAuthRequired(pool *pgxpool.Pool) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		token := c.Get("X-API-Key")
+		if token == "" {
+			return c.Status(401).JSON(fiber.Map{"error": "missing access token"})
+		}
+
+		decryptedID, err := utils.DecryptID(token)
+		if err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "invalid token"})
+		}
+		uuid, err := uuid.Parse(decryptedID)
+		if err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "invalid token"})
+		}
+		c.Locals("projectID", uuid.String())
 		return c.Next()
 	}
 }

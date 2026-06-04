@@ -18,6 +18,7 @@ import (
 
 	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 )
 
 func main() {
@@ -56,21 +57,42 @@ func main() {
 	projectHandler := handlers.NewProjectHandler(*projectService)
 	projectRoutes := routes.NewProjectRoutes(projectHandler)
 
+	trackingRepo := repository.NewTrackingRepository(pool)
+	trackingService := services.NewTrackingService(trackingRepo)
+	trackingHandler := handlers.NewTrackingHandler(trackingService)
+	trackingRoutes := routes.NewTrackingRoutes(trackingHandler, redisClient.Client)
+
 	app := fiber.New()
 	authRoutes.Register(app)
 	userRoutes.Register(app, pool)
 	projectRoutes.Register(app, pool)
+	trackingRoutes.Register(app, pool)
 
-	// Mount the UI with the default configuration under /swagger
-	app.Get("/swagger/*", swaggo.HandlerDefault)
-	// Customize the UI by passing a Config
+	// Serve swagger.json from docs folder
 	app.Get("/docs/*", swaggo.New(swaggo.Config{
-		URL:               "http://example.com/doc.json",
-		DeepLinking:       false,
-		DocExpansion:      "none",
-		OAuth2RedirectUrl: "http://localhost:8080/swagger/oauth2-redirect.html",
+		URL: "/swagger/doc.json",
 	}))
+	// Serve swagger.json file
+	app.Get("/swagger/doc.json", func(c fiber.Ctx) error {
+		return c.SendFile("./docs/swagger.json")
+	})
+	app.Use(cors.New(cors.Config{
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"OPTIONS",
+			"HEAD",
+		},
 
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			"X-API-Key",
+		},
+	}))
+	app.Use(func(c fiber.Ctx) error { fmt.Println(c.Request().String()); return c.Next() })
 	log.Printf("server listening on %s", cfg.ServerPort)
 	if err := app.Listen(StdPort(cfg.ServerPort)); err != nil {
 		log.Fatalf("server error: %v", err)
