@@ -2,17 +2,17 @@
 	"version": 2,
 	"builds": [
 		{
-			"src": "main.go",
+			"src": "api/main.go",
 			"use": "@vercel/go",
 			"config": {
 				"go": "1.26.1"
 			}
 		}
 	],
-	"rewrites": [
+	"routes": [
 		{
-			"source": "/(.*)",
-			"destination": "/api"
+			"src": "/(.*)",
+			"dest": "/api/main"
 		}
 	],
 	"env": {
