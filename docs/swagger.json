@@ -8,7 +8,7 @@
 			"name": "Visit Tracker Support"
 		}
 	},
-	"host": "127.0.0.1:8080",
+	"host": "cyber-sort-somerset-court.trycloudflare.com",
 	"basePath": "/api/v1",
 	"schemes": ["http", "https"],
 	"consumes": ["application/json"],

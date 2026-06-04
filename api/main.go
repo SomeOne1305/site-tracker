@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -103,8 +104,41 @@ func init() {
 
 // Handler is the Vercel serverless function entry point
 func Handler(w http.ResponseWriter, r *http.Request) {
-	app.Handler()(&fasthttp.RequestCtx{
-		Request:  fasthttp.Request{Header: fasthttp.RequestHeader{}},
-		Response: fasthttp.Response{Header: fasthttp.ResponseHeader{}},
+	// Convert standard HTTP request to FastHTTP format for Fiber
+	fastHTTPHandler := app.Handler()
+	
+	// Create FastHTTP request context
+	ctx := &fasthttp.RequestCtx{}
+	
+	// Copy the request from net/http to fasthttp
+	ctx.Request.Header.SetMethod(r.Method)
+	ctx.Request.SetRequestURI(r.RequestURI)
+	if r.RequestURI == "" {
+		ctx.Request.SetRequestURI(r.URL.RequestURI())
+	}
+	
+	// Copy headers
+	for key, values := range r.Header {
+		for _, value := range values {
+			ctx.Request.Header.Add(key, value)
+		}
+	}
+	
+	// Copy body if present
+	if r.Body != nil {
+		body, _ := io.ReadAll(r.Body)
+		ctx.Request.SetBody(body)
+	}
+	
+	// Handle the request with Fiber
+	fastHTTPHandler(ctx)
+	
+	// Copy response headers
+	ctx.Response.Header.VisitAll(func(key, value []byte) {
+		w.Header().Set(string(key), string(value))
 	})
+	
+	// Write status code and body
+	w.WriteHeader(ctx.Response.StatusCode())
+	w.Write(ctx.Response.Body())
 }
