@@ -9,12 +9,7 @@
 			}
 		}
 	],
-	"routes": [
-		{
-			"src": "/(.*)",
-			"dest": "/"
-		}
-	],
+	"rewrites": [{ "source": "/(.*)", "destination": "/" }],
 	"env": {
 		"GO_BUILD_FLAGS": "-ldflags '-s -w'",
 		"PORT": "3000"
